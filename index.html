@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Catégories et Questions</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Gestion des Catégories et Questions</h1>
+
+    <!-- Notification avec ProgressBar -->
+    <div id="notification" class="notification hidden">
+      <div id="progressBar"></div>
+      <span id="notificationText"></span>
+    </div>
+
+    <!-- Formulaire d'ajout de catégories -->
+    <div class="form-section">
+      <h2>Ajouter une Catégorie</h2>
+      <input type="text" id="categoryName" placeholder="Nom de la catégorie">
+      <input type="text" id="categoryDescription" placeholder="Description">
+      <button id="addCategoryBtn" class="btn-primary">Ajouter Catégorie</button>
+    </div>
+
+    <!-- Formulaire d'ajout de questions -->
+    <div class="form-section">
+      <h2>Ajouter une Question</h2>
+      <select id="categorySelect">
+        <option value="">Sélectionner une catégorie</option>
+      </select>
+      <input type="text" id="questionText" placeholder="Texte de la question">
+      <div id="answers">
+        <div class="answer-group">
+          <input type="text" class="answer" placeholder="Réponse A">
+          <label><input type="checkbox" class="correctAnswer" data-id="A"> Correcte</label>
+        </div>
+        <div class="answer-group">
+          <input type="text" class="answer" placeholder="Réponse B">
+          <label><input type="checkbox" class="correctAnswer" data-id="B"> Correcte</label>
+        </div>
+        <div class="answer-group">
+          <input type="text" class="answer" placeholder="Réponse C">
+          <label><input type="checkbox" class="correctAnswer" data-id="C"> Correcte</label>
+        </div>
+        <div class="answer-group">
+          <input type="text" class="answer" placeholder="Réponse D">
+          <label><input type="checkbox" class="correctAnswer" data-id="D"> Correcte</label>
+        </div>
+      </div>
+      <button id="addQuestionBtn" class="btn-primary">Ajouter Question</button>
+    </div>
+
+    <!-- Affichage des questions ajoutées -->
+    <div class="form-section">
+      <h2>Questions Ajoutées</h2>
+      <ul id="questionList"></ul>
+
+    </div>
+
+    <!-- Sauvegarde du JSON -->
+    <button id="saveToJsonBtn" class="btn-secondary">Sauvegarder dans result.json</button>
+    
+  </div>
+  
+  <script>
+    let categories = JSON.parse(localStorage.getItem('categories')) || [];
+let isEditing = false;  // Variable pour suivre si une modification est en cours
+let editingQuestionId = null;  // Variable pour stocker l'ID de la question à modifier
+
+document.getElementById('addCategoryBtn').addEventListener('click', function () {
+  const categoryName = document.getElementById('categoryName').value;
+  const categoryDescription = document.getElementById('categoryDescription').value;
+
+  if (categoryName && categoryDescription) {
+    const category = {
+      id: categories.length + 1,
+      name: categoryName,
+      description: categoryDescription,
+      details: [],
+      corrections: []
+    };
+
+    categories.push(category);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    updateCategorySelect();
+    displayNotification('Catégorie ajoutée avec succès !');
+    resetCategoryForm();
+  } else {
+    alert('Veuillez remplir tous les champs');
+  }
+});
+
+document.getElementById('addQuestionBtn').addEventListener('click', function () {
+  const selectedCategoryId = document.getElementById('categorySelect').value;
+  const questionText = document.getElementById('questionText').value;
+  const answers = Array.from(document.querySelectorAll('.answer')).map((input, index) => {
+    return { id: String.fromCharCode(65 + index), text: input.value };
+  });
+
+  const correctAnswers = Array.from(document.querySelectorAll('.correctAnswer:checked')).map(checkbox => checkbox.dataset.id);
+
+  if (selectedCategoryId && questionText && answers.every(answer => answer.text !== '') && correctAnswers.length > 0) {
+    const category = categories.find(cat => cat.id === parseInt(selectedCategoryId));
+
+    if (isEditing && editingQuestionId !== null) {
+      // Mise à jour de la question existante
+      const question = category.details.find(q => q.questionId === editingQuestionId);
+      question.questionText = questionText;
+      question.answers = answers;
+      question.correctAnswers = correctAnswers;
+
+      // Désactiver le mode d'édition
+      isEditing = false;
+      editingQuestionId = null;
+
+      displayNotification('Question modifiée avec succès !');
+    } else {
+      // Ajouter une nouvelle question
+      const newQuestion = {
+        questionId: category.details.length + 1,
+        questionText,
+        answers,
+        correctAnswers
+      };
+
+      category.details.push(newQuestion);
+      displayNotification('Question ajoutée avec succès !');
+    }
+
+    // Sauvegarde dans localStorage
+    localStorage.setItem('categories', JSON.stringify(categories));
+    displayQuestions();
+    resetQuestionForm();
+  } else {
+    alert('Veuillez remplir tous les champs et sélectionner au moins une bonne réponse');
+  }
+});
+
+function updateCategorySelect() {
+  const select = document.getElementById('categorySelect');
+  select.innerHTML = '<option value="">Sélectionner une catégorie</option>';
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = category.name;
+    select.appendChild(option);
+  });
+}
+
+function displayQuestions() {
+  const list = document.getElementById('questionList');
+  list.innerHTML = '';
+  categories.forEach((category, index) => {
+    const categoryHeader = document.createElement('h3');
+    categoryHeader.textContent = `Catégorie ${index + 1}: ${category.name}`;
+
+    const deleteCategoryBtn = document.createElement('button');
+    deleteCategoryBtn.textContent = 'Supprimer Catégorie';
+    deleteCategoryBtn.classList.add('deleteCategoryBtn');
+    deleteCategoryBtn.dataset.categoryId = category.id;
+    categoryHeader.appendChild(deleteCategoryBtn);
+    list.appendChild(categoryHeader);
+
+    category.details.forEach((question, questionIndex) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        ${questionIndex + 1}. ${question.questionText} (Réponses: ${question.answers.map(a => a.text).join(', ')}) 
+        - Correctes: ${question.correctAnswers.join(', ')}
+        <button class="editQuestionBtn" id="editBtn" data-category-id="${category.id}" data-question-id="${question.questionId}">Modifier</button>
+        <button class="deleteQuestionBtn" data-category-id="${category.id}" data-question-id="${question.questionId}">Supprimer</button>
+      `;
+      list.appendChild(li);
+    });
+
+    // Attach event to delete category button
+    deleteCategoryBtn.addEventListener('click', handleDeleteCategory);
+  });
+
+  document.querySelectorAll('.editQuestionBtn').forEach(button => {
+    button.addEventListener('click', handleEditQuestion);
+  });
+
+  document.querySelectorAll('.deleteQuestionBtn').forEach(button => {
+    button.addEventListener('click', handleDeleteQuestion);
+  });
+}
+
+function handleEditQuestion(event) {
+  const categoryId = parseInt(event.target.dataset['categoryId']);
+  const questionId = parseInt(event.target.dataset['questionId']);
+  const category = categories.find(cat => cat.id === categoryId);
+  const question = category.details.find(q => q.questionId === questionId);
+
+  // Pré-remplir les champs avec les données de la question
+  document.getElementById('categorySelect').value = categoryId;
+  document.getElementById('questionText').value = question.questionText;
+  document.querySelectorAll('.answer').forEach((input, index) => {
+    input.value = question.answers[index].text;
+  });
+  document.querySelectorAll('.correctAnswer').forEach(checkbox => {
+    checkbox.checked = question.correctAnswers.includes(checkbox.dataset.id);
+  });
+
+  // Activer le mode d'édition
+  isEditing = true;
+  editingQuestionId = questionId;
+}
+
+function handleDeleteQuestion(event) {
+  const categoryId = parseInt(event.target.dataset['categoryId']);
+  const questionId = parseInt(event.target.dataset['questionId']);
+  const category = categories.find(cat => cat.id === categoryId);
+
+  // Supprimer la question correspondante
+  category.details = category.details.filter(q => q.questionId !== questionId);
+
+  // Mettre à jour le localStorage et rafraîchir l'affichage
+  localStorage.setItem('categories', JSON.stringify(categories));
+  displayQuestions();
+  displayNotification('Question supprimée avec succès !');
+}
+
+document.getElementById('saveToJsonBtn').addEventListener('click', function () {
+  // Transformer les données en suivant la structure demandée
+  const transformedCategories = categories.map(category => {
+    return {
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      details: category.details.map(question => {
+        return {
+          questionId: question.questionId,
+          questionText: question.questionText,
+          answers: question.answers,
+          correctAnswers: question.correctAnswers
+        };
+      }),
+      corrections: category.details.map(question => {
+        return {
+          questionId: question.questionId,
+          answers: question.answers.map(answer => {
+            return {
+              id: answer.id,
+              text: answer.text,
+              correct: question.correctAnswers.includes(answer.id)
+            };
+          })
+        };
+      })
+    };
+  });
+
+  // Exporter les données dans le format JSON
+  const dataStr = JSON.stringify({ categories: transformedCategories }, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'result.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+// Afficher la notification avec la ProgressBar
+function displayNotification(message) {
+  const notification = document.getElementById('notification');
+  const progressBar = document.getElementById('progressBar');
+  const notificationText = document.getElementById('notificationText');
+  notificationText.textContent = message;
+  notification.classList.remove('hidden');
+  progressBar.style.width = '0%';
+
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 10;
+    progressBar.style.width = `${progress}%`;
+
+    if (progress === 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 500);
+    }
+  }, 100);
+}
+
+// Vider les champs après validation
+function resetCategoryForm() {
+  document.getElementById('categoryName').value = '';
+  document.getElementById('categoryDescription').value = '';
+}
+
+function resetQuestionForm() {
+  document.getElementById('questionText').value = '';
+  document.querySelectorAll('.answer').forEach(input => input.value = '');
+  document.querySelectorAll('.correctAnswer').forEach(checkbox => checkbox.checked = false);
+  document.getElementById('categorySelect').value = '';
+  isEditing = false;
+  editingQuestionId = null;
+}
+
+// Charger les catégories et questions au démarrage
+updateCategorySelect();
+displayQuestions();
+
+function handleDeleteCategory(event) {
+  const categoryId = parseInt(event.target.dataset['categoryId']);
+
+  // Supprimer la catégorie et ses questions
+  categories = categories.filter(cat => cat.id !== categoryId);
+
+  // Réajuster les IDs des catégories restantes
+  categories.forEach((category, index) => {
+    category.id = index + 1;  // Recalculer l'ID en fonction de la nouvelle position
+    category.details.forEach((question, questionIndex) => {
+      question.questionId = questionIndex + 1;  // Recalculer les IDs des questions
+    });
+  });
+
+  // Sauvegarder les changements dans le localStorage et rafraîchir l'affichage
+  localStorage.setItem('categories', JSON.stringify(categories));
+  updateCategorySelect();
+  displayQuestions();
+  displayNotification('Catégorie supprimée avec succès !');
+}
+
+function stars() {
+    let e = document.createElement("div");
+    e.setAttribute("class", "star");
+    document.body.appendChild(e);
+    
+    // Positionnez l'étoile à une position aléatoire en haut de la page
+    e.style.left = Math.random() * innerWidth + "px";
+    e.style.top = Math.random() * -50 + "px"; // Pour faire en sorte qu'elles commencent au-dessus
+
+    let size = Math.random() * 12;
+    e.style.fontSize = 12 + size + "px";
+
+    setTimeout(function () {
+        document.body.removeChild(e);
+    }, 5000);
+}
+
+setInterval(function () {
+    stars();
+}, 100);
+
+
+  </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8;
+      padding: 20px;
+      margin: 0;
+    }
+    .star {
+            position: absolute;
+            top: 0;
+            animation: animate 5s linear forwards;
+        }
+        .star::before {
+            content: '\f005';
+            font-family: "Font Awesome 5 Free"; /* Assurez-vous que la bonne police est utilisée */
+            font-weight: 900; /* S'assurer que l'icône est correctement affichée */
+            color: yellow; /* Couleur de l'étoile */
+            text-shadow: 0 0 5px #fff,
+                         0 0 20px #fff,
+                         0 0 50px #fff;
+        }
+        @keyframes animate {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #007bff;
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #333;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    input,
+    select {
+      width: calc(100% - 20px);
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+      background-color: #f9f9f9;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .answer-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .answer-group input {
+      margin-right: 10px;
+      width: 80%;
+    }
+
+    .answer-group label {
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    #questionList li {
+      background: #e9ecef;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+    }
+
+    #saveToJsonBtn {
+      margin-top: 20px;
+    }
+
+    .notification {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      background-color: #e9f5ff;
+      color: #007bff;
+      position: relative;
+    }
+
+    .notification.hidden {
+      display: none;
+    }
+
+    #progressBar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 5px;
+      background-color: #007bff;
+      transition: width 0.2s ease;
+    }
+
+    .star {
+    position: absolute;
+    animation: animate 5s linear forwards;
+}
+
+@keyframes animate {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+  </style>
