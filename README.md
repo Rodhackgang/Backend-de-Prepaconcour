@@ -15,7 +15,7 @@
 1. Clonez le dépôt :
 
 ```bash
-   git clone https://votre-repo-url.git
+   git clone [https://votre-repo-url.git](https://github.com/Rodhackgang/Backend-de-Prepaconcour.git)
 ```
 2. Accédez au dossier du projet :
    
