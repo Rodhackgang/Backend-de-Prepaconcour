@@ -1,39 +1,67 @@
-# Ajout de fichier Prepaconcour
+<div align="center">
 
-## Description
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=150&section=header&text=G%C3%A9n%C3%A9rateur%20JSON&fontSize=40&fontColor=ffffff&fontAlignY=38&desc=Cat%C3%A9gories%20et%20questions&descAlignY=62&descSize=14&animation=fadeIn" width="100%" alt="Générateur JSON — Catégories et questions" />
 
-**Backend-de-Prepaconcour** est un générateur de fichiers JSON simple et efficace, conçu pour une utilisation locale. Il vous permet de créer et de manipuler des fichiers JSON à travers une interface utilisateur conviviale. Ce projet vise à fournir une solution accessible pour ceux qui ont besoin de générer des données JSON pour des applications ou des tests.
+<p>
+  <img src="https://img.shields.io/badge/Outil-1F6FEB?style=flat-square" alt="Outil" />
+  <img src="https://img.shields.io/github/languages/top/Rodhackgang/Backend-de-Prepaconcour?style=flat-square&color=0F766E" alt="Langage principal" />
+  <img src="https://img.shields.io/github/last-commit/Rodhackgang/Backend-de-Prepaconcour?style=flat-square&color=0F766E&label=dernier%20commit" alt="Dernier commit" />
+  <img src="https://img.shields.io/github/repo-size/Rodhackgang/Backend-de-Prepaconcour?style=flat-square&color=0F766E&label=taille" alt="Taille" />
+</p>
 
-## Fonctionnalités
+<p>
+  <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white&style=for-the-badge" alt="HTML5" />
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black&style=for-the-badge" alt="JavaScript" />
+</p>
 
-- **Interface Utilisateur Intuitive** : L'application propose une interface utilisateur agréable et facile à naviguer, permettant aux utilisateurs de générer des fichiers JSON sans effort.
-- **Génération Locale** : Tous les fichiers JSON sont générés et stockés localement, garantissant la sécurité et la confidentialité de vos données.
-- **Utilisation Flexible** : Les utilisateurs peuvent personnaliser les données JSON selon leurs besoins.
+</div>
 
-## Installation
+---
 
-1. Clonez le dépôt :
+## Présentation
+
+Générateur local de fichiers JSON : saisir des catégories et des questions dans une page, obtenir le fichier prêt à embarquer dans une application.
+
+**Pourquoi ce choix.** Pour alimenter un quiz, un outil local suffit — inutile de monter une base et une API pour produire un fichier.
+
+---
+
+## Ce que fait le projet
+
+- Saisie des catégories et des questions
+- Export JSON directement exploitable
+
+---
+
+## Stack
+
+<div align="center">
+
+<img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white&style=for-the-badge" alt="HTML5" />
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black&style=for-the-badge" alt="JavaScript" />
+
+</div>
+
+---
+
+## Démarrage
 
 ```bash
-   git clone [https://votre-repo-url.git](https://github.com/Rodhackgang/Backend-de-Prepaconcour.git)
+# ouvrir index.html dans le navigateur
 ```
-2. Accédez au dossier du projet :
-   
-```bash
-   cd Backend-de-Prepaconcour
-```
-3. Ouvrez le fichier index.html dans votre navigateur pour accéder à l'interface utilisateur
 
-   ## Utilisation
+---
 
-    **Remplissez les champs requis dans l'interface utilisateur.**
-    > Cliquez sur le bouton "Générer JSON".
-    > Le fichier JSON sera créé et téléchargé automatiquement sur votre machine.
+<div align="center">
 
-## Licence
+### Développé par Rodrigue SAMA
 
-Ce projet est sous la licence Prepaconcour. Il est important de l'utiliser de manière éthique et responsable.
+<a href="https://github.com/Rodhackgang"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
+<a href="https://wa.me/22677701726"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp" /></a>
+<a href="mailto:Samarodrigue690@gmail.com"><img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" /></a>
 
-## Avertissement
+<sub>Ouagadougou, Burkina Faso 🇧🇫</sub>
 
-Bien que le code soit public, il est essentiel de respecter les droits d'utilisation et d'adopter une approche éthique dans l'utilisation de ce générateur. Toute utilisation malveillante ou non conforme aux bonnes pratiques n'est pas encouragée.
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,2,5,30&height=100&section=footer" width="100%" alt="" />
+
+</div>
